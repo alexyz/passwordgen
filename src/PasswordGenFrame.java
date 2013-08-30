@@ -67,7 +67,7 @@ public class PasswordGenFrame extends JFrame {
 		buttonPanel.add(generateButton);
 		buttonPanel.add(copyButton);
 		
-		JPanel contentPanel = new JPanel(new GridLayout(2, 1));;
+		JPanel contentPanel = new JPanel(new GridLayout(2, 1));
 		contentPanel.add(optionPanel);
 		contentPanel.add(buttonPanel);
 		
@@ -100,31 +100,44 @@ public class PasswordGenFrame extends JFrame {
 		return sb.toString();
 	}
 	
+	/**
+	 * return a printable ascii character
+	 */
 	char any () {
-		return (char) (secureRandom.nextInt(95) + 33);
+		// don't include 0x7f (delete)
+		// but do include space
+		return (char) (secureRandom.nextInt(95) + 32);
 	}
 	
 	char lower () {
 		char c;
-		while (!Character.isLowerCase(c = any()));
+		while (!Character.isLowerCase(c = any())) {
+			//
+		}
 		return c;
 	}
 	
 	char upper () {
 		char c;
-		while (!Character.isUpperCase(c = any()));
+		while (!Character.isUpperCase(c = any())) {
+			//
+		}
 		return c;
 	}
 	
 	char digit () {
 		char c;
-		while (!Character.isDigit(c = any()));
+		while (!Character.isDigit(c = any())) {
+			//
+		}
 		return c;
 	}
 	
 	char punct () {
 		char c;
-		while (Character.isAlphabetic(c = any()) || Character.isDigit(c));
+		while (Character.isLetterOrDigit(c = any()) || Character.isWhitespace(c)) {
+			//
+		}
 		return c;
 	}
 }
