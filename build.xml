@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project rand">
-    <target name="create_run_jar">
-        <jar destfile="passwordgen.jar" filesetmanifest="mergewithoutmain">
-            <manifest>
-                <attribute name="Main-Class" value="PasswordGenFrame"/>
-                <attribute name="Class-Path" value="."/>
-            </manifest>
-            <fileset dir="bin"/>
-        </jar>
-    </target>
+<project default="jar">
+	<target name="jar">
+	        <jar destfile="passwordgen.jar" filesetmanifest="mergewithoutmain">
+	            <manifest>
+	                <attribute name="Main-Class" value="pwgen.PasswordGenJFrame"/>
+	            </manifest>
+	            <fileset dir="bin"/>
+	        </jar>
+	    </target>
+		<target name="deploy" depends="jar">
+			<copy file="passwordgen.jar" tofile="${user.home}/Dropbox/Public/passwordgen.jar"/>
+		</target>
 </project>
