@@ -29,7 +29,6 @@ public class PasswordGenJFrame extends JFrame {
 	private final JTextArea textArea = new JTextArea();
 	private final JSpinner lowerSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JSpinner upperSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
-	private final JSpinner hexSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JSpinner digitSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JSpinner punctSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JSpinner anySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
@@ -74,14 +73,12 @@ public class PasswordGenJFrame extends JFrame {
 		optionPanel.add(digitSpinner);
 		optionPanel.add(new JLabel("Punct"));
 		optionPanel.add(punctSpinner);
+		optionPanel.add(new JLabel("Any"));
+		optionPanel.add(anySpinner);
 		
 		JPanel optionPanel2 = new JPanel();
-		optionPanel2.add(new JLabel("Word"));
+		optionPanel2.add(new JLabel("Title Word"));
 		optionPanel2.add(wordSpinner);
-		optionPanel2.add(new JLabel("Hex"));
-		optionPanel2.add(hexSpinner);
-		optionPanel2.add(new JLabel("Any"));
-		optionPanel2.add(anySpinner);
 		optionPanel2.add(shuffleBox);
 		
 		JPanel buttonPanel = new JPanel();
@@ -105,7 +102,6 @@ public class PasswordGenJFrame extends JFrame {
 		System.out.println("load prefs");
 		anySpinner.setValue(prefs.getInt("any", 0));
 		digitSpinner.setValue(prefs.getInt("digit", 1));
-		hexSpinner.setValue(prefs.getInt("hex", 0));
 		lowerSpinner.setValue(prefs.getInt("lower", 6));
 		punctSpinner.setValue(prefs.getInt("punct", 0));
 		shuffleBox.setSelected(prefs.getBoolean("shuffle", false));
@@ -117,7 +113,6 @@ public class PasswordGenJFrame extends JFrame {
 		System.out.println("save prefs");
 		prefs.putInt("any", (Integer) anySpinner.getValue());
 		prefs.putInt("digit", (Integer) digitSpinner.getValue());
-		prefs.putInt("hex", (Integer) hexSpinner.getValue());
 		prefs.putInt("lower", (Integer) lowerSpinner.getValue());
 		prefs.putInt("punct", (Integer) punctSpinner.getValue());
 		prefs.putBoolean("shuffle", shuffleBox.isSelected());
@@ -126,28 +121,20 @@ public class PasswordGenJFrame extends JFrame {
 	}
 	
 	public String generate () {
+		List<String> list = new ArrayList<>();
+		list.add(upper((Integer) upperSpinner.getValue()));
+		list.add(lower((Integer) lowerSpinner.getValue()));
+		list.add(digit((Integer) digitSpinner.getValue()));
+		list.add(punct((Integer) punctSpinner.getValue()));
+		list.add(any((Integer) anySpinner.getValue()));
+		list.add(word((Integer) wordSpinner.getValue(), false, true));
+		Collections.shuffle(list, secureRandom);
 		StringBuilder sb = new StringBuilder();
-		for (int n = 0; n < ((Integer) upperSpinner.getValue()); n++) {
-			sb.append(upper());
-		}
-		for (int n = 0; n < ((Integer) lowerSpinner.getValue()); n++) {
-			sb.append(lower());
-		}
-		for (int n = 0; n < ((Integer) digitSpinner.getValue()); n++) {
-			sb.append(digit());
-		}
-		for (int n = 0; n < ((Integer) punctSpinner.getValue()); n++) {
-			sb.append(punct());
-		}
-		sb.append(word((Integer) wordSpinner.getValue()));
-		for (int n = 0; n < ((Integer) hexSpinner.getValue()); n++) {
-			sb.append(hex());
-		}
-		for (int n = 0; n < ((Integer) anySpinner.getValue()); n++) {
-			sb.append(any());
+		for (String s : list) {
+			sb.append(s);
 		}
 		if (shuffleBox.isSelected()) {
-			Collections.shuffle(new SBList(sb), secureRandom);
+			Collections.shuffle(new StringBuilderList(sb), secureRandom);
 		}
 		return sb.toString();
 	}
@@ -155,82 +142,93 @@ public class PasswordGenJFrame extends JFrame {
 	/**
 	 * return a printable ascii character
 	 */
-	private char any () {
-		// don't include 0x7f (delete)
-		// but do include space
-		return (char) (secureRandom.nextInt(95) + 32);
-	}
-	
-	private char lower () {
-		return (char) ('a' + secureRandom.nextInt(26));
-	}
-	
-	private char upper () {
-		return (char) ('A' + secureRandom.nextInt(26));
-	}
-	
-	private char digit () {
-		return (char) ('0' + secureRandom.nextInt(10));
-	}
-	
-	private char punct () {
-		while (true) {
-			char c = any();
-			if (!Character.isLetterOrDigit(c) && !Character.isWhitespace(c)) {
-				return c;
-			}
-		}
-	}
-	
-	private char hex () {
-		return "01234567890abcdef".charAt(secureRandom.nextInt(16));
-	}
-	
-	private String word (int max) {
+	private String any (int max) {
 		StringBuilder sb = new StringBuilder();
-		String v = "aeiou";
+		for (int n = 0; n < max; n++) {
+			// don't include 0x7f (delete)
+			// but do include space
+			char c = (char) (secureRandom.nextInt(95) + 32);
+			sb.append(c);
+		}
+		return sb.toString();
+	}
+	
+	private String lower (int max) {
+		StringBuilder sb = new StringBuilder();
+		for (int n = 0; n < max; n++) {
+			char c = (char) ('a' + secureRandom.nextInt(26));
+			sb.append(c);
+		}
+		return sb.toString();
+	}
+	
+	private String upper (int max) {
+		StringBuilder sb = new StringBuilder();
+		for (int n = 0; n < max; n++) {
+			char c = (char) ('A' + secureRandom.nextInt(26));
+			sb.append(c);
+		}
+		return sb.toString();
+	}
+	
+	private String digit (int max) {
+		StringBuilder sb = new StringBuilder();
+		for (int n = 0; n < max; n++) {
+			char c = (char) ('0' + secureRandom.nextInt(10));
+			sb.append(c);
+		}
+		return sb.toString();
+	}
+	
+	private String punct (int max) {
+		StringBuilder sb = new StringBuilder();
 		for (int n = 0; n < max; n++) {
 			while (true) {
-				char c = lower();
-				if (sb.length() == 0) {
+				char c = (char) (secureRandom.nextInt(95) + 32);
+				if (!Character.isLetterOrDigit(c) && !Character.isWhitespace(c)) {
 					sb.append(c);
 					break;
-				} else {
-					char p = sb.charAt(sb.length() - 1);
-					if ((v.indexOf(p) >= 0 && v.indexOf(c) == -1) || (v.indexOf(p) == -1 && v.indexOf(c) >= 0)) {
-						sb.append(c);
-						break;
-					}
 				}
 			}
 		}
 		return sb.toString();
 	}
-}
-
-class SBList extends AbstractList<Character> {
-
-	private final StringBuilder sb;
-
-	public SBList (StringBuilder sb) {
-		this.sb = sb;
+	
+	private String hex (int max) {
+		StringBuilder sb = new StringBuilder();
+		for (int n = 0; n < max; n++) {
+			sb.append("01234567890abcdef".charAt(secureRandom.nextInt(16)));
+		}
+		return sb.toString();
 	}
 	
-	@Override
-	public Character set (int index, Character element) {
-		char c = sb.charAt(index);
-		sb.setCharAt(index, element);
-		return c;
+	private String word (int len, boolean upper, boolean title) {
+		if (len > 0) {
+			StringBuilder sb = new StringBuilder();
+			String v = "aeiou";
+			for (int n = 0; n < len; n++) {
+				while (true) {
+					char c = (char) ('a' + secureRandom.nextInt(26));
+					if (sb.length() == 0) {
+						sb.append(c);
+						break;
+					} else {
+						char p = sb.charAt(sb.length() - 1);
+						if ((v.indexOf(p) >= 0 && v.indexOf(c) == -1) || (v.indexOf(p) == -1 && v.indexOf(c) >= 0)) {
+							sb.append(c);
+							break;
+						}
+					}
+				}
+			}
+			if (upper) {
+				return sb.toString().toUpperCase();
+			} else if (title) {
+				return Character.toUpperCase(sb.charAt(0)) + sb.substring(1);
+			} else {
+				return sb.toString();
+			}
+		}
+		return "";
 	}
-	
-	@Override
-	public Character get (int index) {
-		return sb.charAt(index);
-	}
-
-	@Override
-	public int size () {
-		return sb.length();
-	}
-	
 }
