@@ -29,15 +29,15 @@ public class CharPasswordJPanel extends PasswordJPanel {
 	}
 	
 	@Override
-	protected void loadPrefs () {
+	protected void loadPrefs () throws Exception {
 		System.out.println("load prefs");
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
 		lowerSpinner.setValue(prefs.getInt("lower", 6));
 		upperSpinner.setValue(prefs.getInt("upper", 1));
-		digitSpinner.setValue(prefs.getInt("digit", 1));
+		digitSpinner.setValue(prefs.getInt("digitx", 1));
 		punctSpinner.setValue(prefs.getInt("punct", 0));
 		anySpinner.setValue(prefs.getInt("any", 0));
-		shuffleBox.setSelected(prefs.getBoolean("shuffle", false));
+		shuffleBox.setSelected(prefs.getBoolean("shufflex", false));
 	}
 	
 	@Override
@@ -46,11 +46,11 @@ public class CharPasswordJPanel extends PasswordJPanel {
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
 		prefs.putInt("upper", (Integer) upperSpinner.getValue());
 		prefs.putInt("lower", (Integer) lowerSpinner.getValue());
-		prefs.putInt("digit", (Integer) digitSpinner.getValue());
+		prefs.putInt("digitx", (Integer) digitSpinner.getValue());
 		prefs.putInt("punct", (Integer) punctSpinner.getValue());
 		prefs.putInt("any", (Integer) anySpinner.getValue());
-		prefs.putBoolean("shuffle", shuffleBox.isSelected());
-		prefs.sync();
+		prefs.putBoolean("shufflex", shuffleBox.isSelected());
+		prefs.flush();
 	}
 	
 	@Override
@@ -62,7 +62,7 @@ public class CharPasswordJPanel extends PasswordJPanel {
 		sb.append(punct((Integer) punctSpinner.getValue()));
 		sb.append(any((Integer) anySpinner.getValue()));
 		if (shuffleBox.isSelected()) {
-			Collections.shuffle(new StringBuilderList(sb), secureRandom);
+			Collections.shuffle(new StringBuilderList(sb), RANDOM);
 		}
 		return sb.toString();
 	}

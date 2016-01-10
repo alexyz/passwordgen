@@ -1,14 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="jar">
-	<target name="jar">
-	        <jar destfile="passwordgen.jar" filesetmanifest="mergewithoutmain">
-	            <manifest>
-	                <attribute name="Main-Class" value="pwgen.PasswordGenJFrame"/>
-	            </manifest>
-	            <fileset dir="bin"/>
-	        </jar>
-	    </target>
-		<target name="deploy" depends="jar">
-			<copy file="passwordgen.jar" tofile="${user.home}/Dropbox/Public/passwordgen.jar"/>
-		</target>
+
+	<target name="compile" unless="eclipse.pdebuild.home">
+		<mkdir dir="bin" />
+		<javac srcdir="src" destdir="bin" source="1.7" target="1.7" includeAntRuntime="false" />
+	</target>
+	
+	<target name="jar" depends="compile">
+		<tstamp />
+		<jar destfile="dist/passwordgen.jar" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Main-Class" value="pwgen.PasswordGenJFrame" />
+				<attribute name="DSTAMP" value="${DSTAMP}" />
+			</manifest>
+			<fileset dir="bin" />
+		</jar>
+	</target>
+	
+	<target name="deploy" depends="jar">
+		<copy todir="${user.home}/Dropbox/Public">
+			<fileset dir="dist" includes="**/*.jar" />
+		</copy>
+	</target>
+	
 </project>

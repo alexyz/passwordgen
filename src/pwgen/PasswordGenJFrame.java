@@ -1,6 +1,11 @@
 package pwgen;
 
 import java.awt.event.*;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.prefs.Preferences;
 
 import javax.swing.*;
@@ -21,8 +26,29 @@ public class PasswordGenJFrame extends JFrame {
 		f.setVisible(true);
 	}
 	
+	private static String getDateStamp() {
+		ClassLoader cl = ClassLoader.getSystemClassLoader();
+		if (cl instanceof URLClassLoader) {
+			URLClassLoader ucl = (URLClassLoader) cl;
+			URL url = ucl.findResource("META-INF/MANIFEST.MF");
+			if (url != null) {
+				try {
+					Manifest manifest = new Manifest(url.openStream());
+					Attributes attributes = manifest.getMainAttributes();
+					String dateStamp = attributes.getValue("DSTAMP");
+					if (dateStamp != null) {
+						return dateStamp;
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return "";
+	}
+	
 	public PasswordGenJFrame () {
-		super("Password Generator");
+		super("Password Generator " + getDateStamp());
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -44,8 +70,12 @@ public class PasswordGenJFrame extends JFrame {
 	private void loadPrefs () {
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
 		tabs.setSelectedIndex(prefs.getInt("index", 0));
-		charPassPanel.loadPrefs();
-		wordPassPanel.loadPrefs();
+		try {
+			charPassPanel.loadPrefs();
+			wordPassPanel.loadPrefs();
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this, e.toString());
+		}
 	}
 
 	private void savePrefs () {

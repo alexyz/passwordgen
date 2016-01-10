@@ -48,7 +48,7 @@ public class WordPasswordJPanel extends PasswordJPanel {
 		list.add(word((Integer) wordSpinner.getValue(), titleBox.isSelected()));
 		list.add(digit((Integer) digitSpinner.getValue()));
 		if (shuffleBox.isSelected()) {
-			Collections.shuffle(list, secureRandom);
+			Collections.shuffle(list, RANDOM);
 		}
 		StringBuilder sb = new StringBuilder();
 		for (String s : list) {
@@ -63,7 +63,7 @@ public class WordPasswordJPanel extends PasswordJPanel {
 			String v = "aeiou";
 			for (int n = 0; n < len; n++) {
 				while (true) {
-					char c = (char) ('a' + secureRandom.nextInt(26));
+					char c = (char) ('a' + RANDOM.nextInt(26));
 					if (sb.length() == 0) {
 						sb.append(c);
 						break;
