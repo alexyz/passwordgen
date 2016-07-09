@@ -2,6 +2,7 @@ package pwgen;
 
 import java.util.AbstractList;
 
+/** list wrapper for stringbuilder */
 class StringBuilderList extends AbstractList<Character> {
 
 	private final StringBuilder sb;

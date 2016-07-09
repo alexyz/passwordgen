@@ -18,6 +18,7 @@ public class PasswordGenJFrame extends JFrame {
 	private final JTabbedPane tabs = new JTabbedPane();
 	private final CharPasswordJPanel charPassPanel = new CharPasswordJPanel();
 	private final WordPasswordJPanel wordPassPanel = new WordPasswordJPanel();
+	private final DictPasswordJPanel dictPassPanel = new DictPasswordJPanel();
 	
 	public static void main (String args[]) {
 		PasswordGenJFrame f = new PasswordGenJFrame();
@@ -26,29 +27,8 @@ public class PasswordGenJFrame extends JFrame {
 		f.setVisible(true);
 	}
 	
-	private static String getDateStamp() {
-		ClassLoader cl = ClassLoader.getSystemClassLoader();
-		if (cl instanceof URLClassLoader) {
-			URLClassLoader ucl = (URLClassLoader) cl;
-			URL url = ucl.findResource("META-INF/MANIFEST.MF");
-			if (url != null) {
-				try {
-					Manifest manifest = new Manifest(url.openStream());
-					Attributes attributes = manifest.getMainAttributes();
-					String dateStamp = attributes.getValue("DSTAMP");
-					if (dateStamp != null) {
-						return dateStamp;
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		return "";
-	}
-	
 	public PasswordGenJFrame () {
-		super("Password Generator " + getDateStamp());
+		super("Password Generator");
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -60,6 +40,7 @@ public class PasswordGenJFrame extends JFrame {
 		
 		tabs.add("Character", charPassPanel);
 		tabs.add("Word", wordPassPanel);
+		tabs.add("Dictionary", dictPassPanel);
 		
 		loadPrefs();
 		
@@ -73,6 +54,7 @@ public class PasswordGenJFrame extends JFrame {
 		try {
 			charPassPanel.loadPrefs();
 			wordPassPanel.loadPrefs();
+			dictPassPanel.loadPrefs();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, e.toString());
 		}
@@ -85,7 +67,7 @@ public class PasswordGenJFrame extends JFrame {
 			prefs.putInt("index", tabs.getSelectedIndex());
 			charPassPanel.savePrefs();
 			wordPassPanel.savePrefs();
-			
+			dictPassPanel.savePrefs();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, e.toString());
 		}

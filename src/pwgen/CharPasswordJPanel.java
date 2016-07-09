@@ -12,7 +12,6 @@ public class CharPasswordJPanel extends PasswordJPanel {
 	private final JSpinner digitSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JSpinner punctSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JSpinner anySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
-	private final JCheckBox shuffleBox = new JCheckBox("Shuffle");
 	
 	public CharPasswordJPanel () {
 		optionPanel.add(new JLabel("Upper"));
@@ -25,7 +24,6 @@ public class CharPasswordJPanel extends PasswordJPanel {
 		optionPanel.add(punctSpinner);
 		optionPanel.add(new JLabel("Any"));
 		optionPanel.add(anySpinner);
-		optionPanel.add(shuffleBox);
 	}
 	
 	@Override
@@ -37,7 +35,6 @@ public class CharPasswordJPanel extends PasswordJPanel {
 		digitSpinner.setValue(prefs.getInt("digitx", 1));
 		punctSpinner.setValue(prefs.getInt("punct", 0));
 		anySpinner.setValue(prefs.getInt("any", 0));
-		shuffleBox.setSelected(prefs.getBoolean("shufflex", false));
 	}
 	
 	@Override
@@ -49,7 +46,6 @@ public class CharPasswordJPanel extends PasswordJPanel {
 		prefs.putInt("digitx", (Integer) digitSpinner.getValue());
 		prefs.putInt("punct", (Integer) punctSpinner.getValue());
 		prefs.putInt("any", (Integer) anySpinner.getValue());
-		prefs.putBoolean("shufflex", shuffleBox.isSelected());
 		prefs.flush();
 	}
 	
@@ -61,9 +57,7 @@ public class CharPasswordJPanel extends PasswordJPanel {
 		sb.append(digit((Integer) digitSpinner.getValue()));
 		sb.append(punct((Integer) punctSpinner.getValue()));
 		sb.append(any((Integer) anySpinner.getValue()));
-		if (shuffleBox.isSelected()) {
-			Collections.shuffle(new StringBuilderList(sb), RANDOM);
-		}
+		Collections.shuffle(new StringBuilderList(sb), RANDOM);
 		return sb.toString();
 	}
 }

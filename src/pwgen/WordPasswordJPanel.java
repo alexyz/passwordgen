@@ -12,7 +12,6 @@ public class WordPasswordJPanel extends PasswordJPanel {
 	private final JSpinner wordSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JSpinner digitSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JCheckBox titleBox = new JCheckBox("Title");
-	private final JCheckBox shuffleBox = new JCheckBox("Shuffle");
 	
 	public WordPasswordJPanel () {
 		optionPanel.add(new JLabel("Word"));
@@ -20,7 +19,6 @@ public class WordPasswordJPanel extends PasswordJPanel {
 		optionPanel.add(new JLabel("Digit"));
 		optionPanel.add(digitSpinner);
 		optionPanel.add(titleBox);
-		optionPanel.add(shuffleBox);
 	}
 	
 	@Override
@@ -29,7 +27,6 @@ public class WordPasswordJPanel extends PasswordJPanel {
 		wordSpinner.setValue(prefs.getInt("words", 7));
 		digitSpinner.setValue(prefs.getInt("digit", 1));
 		titleBox.setSelected(prefs.getBoolean("title", false));
-		shuffleBox.setSelected(prefs.getBoolean("shuffle", false));
 	}
 	
 	@Override
@@ -38,18 +35,18 @@ public class WordPasswordJPanel extends PasswordJPanel {
 		prefs.putInt("words", (Integer) wordSpinner.getValue());
 		prefs.putInt("digit", (Integer) digitSpinner.getValue());
 		prefs.putBoolean("title", titleBox.isSelected());
-		prefs.putBoolean("shuffle", shuffleBox.isSelected());
 		prefs.sync();
 	}
 	
 	@Override
 	public String generate () {
 		List<String> list = new ArrayList<>();
-		list.add(word((Integer) wordSpinner.getValue(), titleBox.isSelected()));
-		list.add(digit((Integer) digitSpinner.getValue()));
-		if (shuffleBox.isSelected()) {
-			Collections.shuffle(list, RANDOM);
-		}
+		int word = ((Integer) wordSpinner.getValue()).intValue();
+		int digit = ((Integer) digitSpinner.getValue()).intValue();
+		
+		list.add(word(word, titleBox.isSelected()));
+		list.add(digit(digit));
+		Collections.shuffle(list, RANDOM);
 		StringBuilder sb = new StringBuilder();
 		for (String s : list) {
 			sb.append(s);
