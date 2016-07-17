@@ -35,15 +35,14 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>theMainClass</mainClass>
+							<mainClass>pwgen.PasswordGenJFrame</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.8</version>
 				<executions>
 					<execution>
 						<phase>install</phase>
