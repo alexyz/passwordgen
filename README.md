@@ -1,9 +1,9 @@
 passwordgen
 ===========
 
-Application to generate random ASCII passwords with selected character types.
+Application to generate random ASCII passwords with selected character types
 
-Written in Java 1.6/Swing.
+Written in Java 1.8
 
 Screenshot
 ----------

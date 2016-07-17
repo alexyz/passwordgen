@@ -5,8 +5,6 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.security.SecureRandom;
 
 import javax.swing.*;
@@ -25,24 +23,13 @@ public abstract class PasswordJPanel extends JPanel {
 		super(new GridLayout(2, 1));
 		setBorder(BorderFactory.createEmptyBorder());
 		
-		textField.setColumns(20);
+		textField.setColumns(32);
 		textField.setFont(new Font("monospaced", Font.PLAIN, 16));
 		textField.setBorder(BorderFactory.createEtchedBorder());
 		
-		generateButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed (ActionEvent e) {
-				textField.setText(generate());
-			}
-		});
+		generateButton.addActionListener(e -> textField.setText(generate()));
 		
-		copyButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed (ActionEvent e) {
-				Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
-				clip.setContents(new StringSelection(textField.getText()), null);
-			}
-		});
+		copyButton.addActionListener(e -> copy());
 		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(textField);
@@ -51,6 +38,11 @@ public abstract class PasswordJPanel extends JPanel {
 		
 		add(optionPanel);
 		add(buttonPanel);
+	}
+
+	private void copy () {
+		Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clip.setContents(new StringSelection(textField.getText()), null);
 	}
 	
 	protected abstract String generate();

@@ -1,11 +1,6 @@
 package pwgen;
 
 import java.awt.event.*;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 import java.util.prefs.Preferences;
 
 import javax.swing.*;
@@ -28,14 +23,13 @@ public class PasswordGenJFrame extends JFrame {
 	}
 	
 	public PasswordGenJFrame () {
-		super("Password Generator");
+		super("Password Generator [https://github.com/alexyz/passwordgen]");
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing (WindowEvent ae) {
 				savePrefs();
 			}
-
 		});
 		
 		tabs.add("Character", charPassPanel);

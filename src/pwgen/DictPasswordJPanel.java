@@ -4,10 +4,14 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 
 import javax.swing.*;
 
 public class DictPasswordJPanel extends PasswordJPanel {
+	
+	private static final int MAX = 8;
+	private static final int MIN = 4;
 	
 	private final JLabel fileLabel = new JLabel();
 	private final JButton fileButton = new JButton("File...");
@@ -44,14 +48,16 @@ public class DictPasswordJPanel extends PasswordJPanel {
 			}
 		}
 	}
-
+	
 	private void loadfile () {
 		dict.clear();
+		Pattern p = Pattern.compile("[a-z]+");
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
 			String l;
 			while ((l = br.readLine()) != null) {
+				// try to avoid poor quality words
 				l = l.trim().toLowerCase();
-				if (!l.endsWith("'s")) {
+				if (p.matcher(l).matches() && l.length() >= MIN && l.length() <= MAX) {
 					dict.compute(l.length(), (k,v) -> v != null ? v : new TreeSet<>()).add(l);
 				}
 			}
@@ -60,7 +66,7 @@ public class DictPasswordJPanel extends PasswordJPanel {
 			JOptionPane.showMessageDialog(this, e.toString());
 		}
 	}
-
+	
 	@Override
 	protected void loadPrefs () {
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
@@ -95,27 +101,97 @@ public class DictPasswordJPanel extends PasswordJPanel {
 		if (dict.size() == 0) {
 			loadfile();
 		}
-		int wordlen = ((Integer)wordSpinner.getValue()).intValue();
-		int dig = ((Integer)digitSpinner.getValue()).intValue();
-		int pun = ((Integer)punctSpinner.getValue()).intValue();
 		
-		List<String> l = new ArrayList<>();
-		if (pun > 0) {
-			l.add(punct(pun));
+		if (dict.size() == 0) {
+			JOptionPane.showMessageDialog(this, "No words in dictionary");
+			return "";
 		}
-		if (dig > 0) {
-			l.add(digit(dig));
-		}
-		Set<String> s = dict.get(wordlen);
-		List<String> dictlist = new ArrayList<>(s);
-		String word = dictlist.get(RANDOM.nextInt(dictlist.size()));
-		if (titleBox.isSelected()) {
-			word = word.substring(0, 1).toUpperCase() + word.substring(1);
-		}
-		l.add(word);
-		Collections.shuffle(l, RANDOM);
 		
-		return String.join("", l);
+		List<String> parts = new ArrayList<>();
+		
+		{
+			int len = ((Integer)wordSpinner.getValue()).intValue();
+			
+			List<Integer> seq = seq(len);
+			if (seq == null) {
+				JOptionPane.showMessageDialog(this, "Could not sequence");
+				return "";
+			}
+			
+			for (int x : seq) {
+				Set<String> s = dict.get(x);
+				if (s != null && s.size() > 0) {
+					String[] a = s.toArray(new String[s.size()]);
+					String word = a[RANDOM.nextInt(a.length)];
+					if (titleBox.isSelected()) {
+						word = word.substring(0, 1).toUpperCase() + word.substring(1);
+					}
+					parts.add(word);
+				}
+			}
+		}
+		
+		{
+			int dig = ((Integer)digitSpinner.getValue()).intValue();
+			if (dig > 0) {
+				parts.add(digit(dig));
+			}
+		}
+		
+		{
+			int pun = ((Integer)punctSpinner.getValue()).intValue();
+			if (pun > 0) {
+				parts.add(punct(pun));
+			}
+		}
+		
+		Collections.shuffle(parts, RANDOM);
+		return String.join("", parts);
 	}
 	
+	private List<Integer> seq (int len) {
+		
+		List<List<Integer>> seqs = new ArrayList<>();
+		
+		if (dict.keySet().contains(len)) {
+			seqs.add(Arrays.asList(len));
+		}
+		
+		if (seqs.size() == 0 || len >= MAX) {
+			List<Integer> seq = sumseq(len);
+			if (seq != null) {
+				seqs.add(seq);
+			}
+		}
+		
+		return seqs.size() > 0 ? seqs.get(RANDOM.nextInt(seqs.size())) : null;
+	}
+	
+	private List<Integer> sumseq (int len) {
+		// add sizes to list
+		// shuffle list
+		// pick a subset...
+		Integer[] keys = dict.keySet().toArray(new Integer[dict.size()]);
+		List<Integer> seq = new ArrayList<>();
+		for (int n = 0; n < keys.length; n++) {
+			if (keys[n] <= len - MIN) {
+				for (int m = 0; m < len - MIN; m++) {
+					seq.add(keys[n]);
+				}
+			}
+		}
+//		System.out.println("seq=" + seq);
+		for (int n = 0; n < 100; n++) {
+			Collections.shuffle(seq, RANDOM);
+			int sum = 0;
+			for (int m = 0; m < seq.size() && sum < len; m++) {
+				sum += seq.get(m);
+				if (sum == len) {
+//					System.out.println("n=" + n);
+					return new ArrayList<>(seq.subList(0, m + 1));
+				}
+			}
+		}
+		return null;
+	}
 }

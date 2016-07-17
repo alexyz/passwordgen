@@ -1,2 +1,5 @@
-bin/
+bin
 *.jar
+target
+dist
+.DS_Store
