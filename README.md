@@ -8,9 +8,9 @@ Written in Java 1.8
 Screenshot
 ----------
 
-![Screenshot](https://dl.dropboxusercontent.com/u/8069847/passwordgen.png)
+![Screenshot](passwordgen.png)
 
 Download
 --------
 
-[Runnable jar file](https://dl.dropboxusercontent.com/u/8069847/passwordgen.jar)
+[Runnable jar file](https://www.dropbox.com/s/0ydregioanvjtmy/passwordgen.jar?dl=0)
