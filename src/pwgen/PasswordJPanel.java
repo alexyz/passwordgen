@@ -6,6 +6,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.security.SecureRandom;
+import java.util.Base64;
 
 import javax.swing.*;
 
@@ -109,9 +110,24 @@ public abstract class PasswordJPanel extends JPanel {
 	protected String hex (int max) {
 		StringBuilder sb = new StringBuilder();
 		for (int n = 0; n < max; n++) {
-			sb.append("01234567890abcdef".charAt(RANDOM.nextInt(16)));
+			sb.append(Integer.toHexString(RANDOM.nextInt(16)));
 		}
 		return sb.toString();
+	}
+	
+	protected String bits (int bits, boolean b64) {
+		byte[] a = new byte[bits/8];
+		RANDOM.nextBytes(a);
+		if (b64) {
+			return Base64.getEncoder().encodeToString(a);
+		} else {
+			StringBuilder sb = new StringBuilder();
+			for (int n = 0; n < a.length; n++) {
+				byte b = a[n];
+				sb.append(Integer.toHexString(b&0xf)).append(Integer.toHexString((b>>4)&0xf));
+			}
+			return sb.toString();
+		}
 	}
 	
 }
