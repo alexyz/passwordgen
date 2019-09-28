@@ -5,6 +5,8 @@ import java.util.prefs.Preferences;
 
 import javax.swing.*;
 
+import static pwgen.PwUtil.*;
+
 public class CharPasswordJPanel extends PasswordJPanel {
 	
 	private final JSpinner lowerSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
@@ -12,6 +14,8 @@ public class CharPasswordJPanel extends PasswordJPanel {
 	private final JSpinner digitSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JSpinner punctSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JSpinner anySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
+	private final JCheckBox shuffleBox = new JCheckBox("Shuffle");
+
 	
 	public CharPasswordJPanel () {
 		optionPanel.add(new JLabel("Upper"));
@@ -24,40 +28,54 @@ public class CharPasswordJPanel extends PasswordJPanel {
 		optionPanel.add(punctSpinner);
 		optionPanel.add(new JLabel("Any"));
 		optionPanel.add(anySpinner);
+		optionPanel.add(shuffleBox);
 	}
 	
 	@Override
 	protected void loadPrefs () throws Exception {
 		System.out.println("load prefs");
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
-		lowerSpinner.setValue(prefs.getInt("lower", 6));
-		upperSpinner.setValue(prefs.getInt("upper", 1));
-		digitSpinner.setValue(prefs.getInt("digitx", 1));
-		punctSpinner.setValue(prefs.getInt("punct", 0));
-		anySpinner.setValue(prefs.getInt("any", 0));
+		lowerSpinner.setValue(prefs.getInt("chlower", 5));
+		upperSpinner.setValue(prefs.getInt("chupper", 1));
+		digitSpinner.setValue(prefs.getInt("chdigit", 1));
+		punctSpinner.setValue(prefs.getInt("chpunct", 1));
+		anySpinner.setValue(prefs.getInt("chany", 0));
+		shuffleBox.setSelected(prefs.getBoolean("chshuf", true));
 	}
 	
 	@Override
 	protected void savePrefs () throws Exception {
 		System.out.println("save prefs");
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
-		prefs.putInt("upper", (Integer) upperSpinner.getValue());
-		prefs.putInt("lower", (Integer) lowerSpinner.getValue());
-		prefs.putInt("digitx", (Integer) digitSpinner.getValue());
-		prefs.putInt("punct", (Integer) punctSpinner.getValue());
-		prefs.putInt("any", (Integer) anySpinner.getValue());
+		prefs.putInt("chupper", (Integer) upperSpinner.getValue());
+		prefs.putInt("chlower", (Integer) lowerSpinner.getValue());
+		prefs.putInt("chdigit", (Integer) digitSpinner.getValue());
+		prefs.putInt("chpunct", (Integer) punctSpinner.getValue());
+		prefs.putInt("chany", (Integer) anySpinner.getValue());
+		prefs.putBoolean("chshuf", shuffleBox.isSelected());
 		prefs.flush();
 	}
 	
 	@Override
-	public String generate () {
+	public void generate () {
 		StringBuilder sb = new StringBuilder();
-		sb.append(upper((Integer) upperSpinner.getValue()));
-		sb.append(lower((Integer) lowerSpinner.getValue()));
-		sb.append(digit((Integer) digitSpinner.getValue()));
-		sb.append(punct((Integer) punctSpinner.getValue()));
-		sb.append(any((Integer) anySpinner.getValue()));
-		Collections.shuffle(new StringBuilderList(sb), RANDOM);
-		return sb.toString();
+		int u = intValue(upperSpinner);
+		int l = intValue(lowerSpinner);
+		int d = intValue(digitSpinner);
+		int p = intValue(punctSpinner);
+		int a = intValue(anySpinner);
+		sb.append(upper(u));
+		sb.append(lower(l));
+		sb.append(digit(d));
+		sb.append(punct(p));
+		sb.append(any(a));
+		double v = pow(26, u + l) + pow(10, d) + pow(PUNCT, p) + pow(ANY, a);
+		System.out.println("v=" + v);
+		if (shuffleBox.isSelected()) {
+			Collections.shuffle(new StringBuilderList(sb), RANDOM);
+			double f = fac(sb.length()) / (fac(u)*fac(l)*fac(d)*fac(p)*fac(a));
+			v = v * f;
+		}
+		setValue(sb.toString(), v);
 	}
 }

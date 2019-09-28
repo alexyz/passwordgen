@@ -8,18 +8,32 @@ import java.util.regex.Pattern;
 
 import javax.swing.*;
 
+import static pwgen.PwUtil.*;
+
 public class DictPasswordJPanel extends PasswordJPanel {
-	
-	private static final int MAX = 8;
-	private static final int MIN = 4;
+
+    private static final int MIN = 3;
+    private static final int MAX = 13;
+	private static Comparator<List<Integer>> LI_CMP = new Comparator<List<Integer>>() {
+		@Override
+		public int compare(List<Integer> l1, List<Integer> l2) {
+			int c = l1.size() - l2.size();
+			for (int n = 0; c == 0 && n < l1.size(); n++) {
+				c = l1.get(Integer.valueOf(n)) - l2.get(Integer.valueOf(n));
+			}
+			return c;
+		}
+	};
 	
 	private final JLabel fileLabel = new JLabel();
 	private final JButton fileButton = new JButton("File...");
 	private final JSpinner wordSpinner = new JSpinner(new SpinnerNumberModel(8, 0, 99, 1));
 	private final JSpinner digitSpinner = new JSpinner(new SpinnerNumberModel(1, 0, 99, 1));
 	private final JSpinner punctSpinner = new JSpinner(new SpinnerNumberModel(1, 0, 99, 1));
-	private final SortedMap<Integer,Set<String>> dict = new TreeMap<>();
+	/** map of word length to list of words */
+	private final SortedMap<Integer,List<String>> dict = new TreeMap<>();
 	private final JCheckBox titleBox = new JCheckBox("Title");
+	private final JCheckBox shuffleBox = new JCheckBox("Shuffle");
 	
 	private File file;
 	
@@ -36,6 +50,7 @@ public class DictPasswordJPanel extends PasswordJPanel {
 		optionPanel.add(new JLabel("Punct"));
 		optionPanel.add(punctSpinner);
 		optionPanel.add(titleBox);
+		optionPanel.add(shuffleBox);
 	}
 	
 	private void file () {
@@ -50,7 +65,7 @@ public class DictPasswordJPanel extends PasswordJPanel {
 	}
 	
 	private void loadfile () {
-		dict.clear();
+		Map<Integer,Set<String>> dictset = new TreeMap<>();
 		Pattern p = Pattern.compile("[a-z]+");
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
 			String l;
@@ -58,23 +73,28 @@ public class DictPasswordJPanel extends PasswordJPanel {
 				// try to avoid poor quality words
 				l = l.trim().toLowerCase();
 				if (p.matcher(l).matches() && l.length() >= MIN && l.length() <= MAX) {
-					dict.compute(l.length(), (k,v) -> v != null ? v : new TreeSet<>()).add(l);
+					dictset.computeIfAbsent(l.length(), k -> new TreeSet<>()).add(l);
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(this, e.toString());
 		}
+		dict.clear();
+		for (Map.Entry<Integer,Set<String>> e : dictset.entrySet()) {
+			dict.put(e.getKey(), new ArrayList<>(e.getValue()));
+		}
 	}
 	
 	@Override
 	protected void loadPrefs () {
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
-		wordSpinner.setValue(prefs.getInt("len", 7));
-		digitSpinner.setValue(prefs.getInt("digit", 1));
-		punctSpinner.setValue(prefs.getInt("punct", 1));
-		titleBox.setSelected(prefs.getBoolean("title", false));
-		String f = prefs.get("file", "");
+		wordSpinner.setValue(prefs.getInt("dclen", 6));
+		digitSpinner.setValue(prefs.getInt("dcdigit", 1));
+		punctSpinner.setValue(prefs.getInt("dcpunct", 1));
+		titleBox.setSelected(prefs.getBoolean("dctitle", true));
+		shuffleBox.setSelected(prefs.getBoolean("dcshuf", true));
+		String f = prefs.get("dcfile", "");
 		System.out.println("loaded file pref " + f);
 		if (f.length() > 0) {
 			file = new File(f);
@@ -85,113 +105,127 @@ public class DictPasswordJPanel extends PasswordJPanel {
 	@Override
 	protected void savePrefs () throws Exception {
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
-		prefs.putInt("len", (Integer) wordSpinner.getValue());
-		prefs.putInt("digit", (Integer) digitSpinner.getValue());
-		prefs.putInt("punct", (Integer) punctSpinner.getValue());
-		prefs.putBoolean("title", titleBox.isSelected());
+		prefs.putInt("dclen", (Integer) wordSpinner.getValue());
+		prefs.putInt("dcdigit", (Integer) digitSpinner.getValue());
+		prefs.putInt("dcpunct", (Integer) punctSpinner.getValue());
+		prefs.putBoolean("dctitle", titleBox.isSelected());
+		prefs.putBoolean("dcshuf", shuffleBox.isSelected());
 		if (file != null) {
 			System.out.println("save file pref " + file.getAbsolutePath());
-			prefs.put("file", file.getAbsolutePath());
+			prefs.put("dcfile", file.getAbsolutePath());
 		}
 		prefs.sync();
 	}
+
+	private Set<List<Integer>> partitions(int n, int s) {
+		Set<List<Integer>> out = new TreeSet<>(LI_CMP);
+		if (n == 1 && s >= MIN && s <= MAX) {
+			out.add(Arrays.asList(Integer.valueOf(s)));
+		} else if (n > 1 && s >= MIN) {
+			for (int i = MIN; i < MAX; i++) {
+				for (List<Integer> j : partitions(n - 1, s - i)) {
+					out.add(join(j, i));
+				}
+			}
+		}
+		return out.size() > 0 ? out : Collections.emptySet();
+	}
+
+	private List<Integer> join (List<Integer> l, int i) {
+		List<Integer> l2 = new ArrayList<>();
+		l2.addAll(l);
+		l2.add(i);
+		Collections.sort(l2);
+		return l2;
+	}
+
+	private Long dictproduct(List<Integer> x) {
+		long v = 1;
+		for (Integer i : x) {
+			List<String> s = dict.get(i);
+			v = v * (s != null ? s.size() : 0);
+		}
+		return Long.valueOf(v);
+	}
+
+	private long sum (List<Long> l) {
+		long v = 0;
+		for (Long x : l) {
+			v = v + x;
+		}
+		return v;
+	}
 	
 	@Override
-	public String generate () {
+	public void generate () {
 		if (dict.size() == 0) {
 			loadfile();
 		}
-		
+
 		if (dict.size() == 0) {
 			JOptionPane.showMessageDialog(this, "No words in dictionary");
-			return "";
+			return;
 		}
-		
-		List<String> parts = new ArrayList<>();
-		
-		{
-			int len = ((Integer)wordSpinner.getValue()).intValue();
-			
-			List<Integer> seq = seq(len);
-			if (seq == null) {
-				JOptionPane.showMessageDialog(this, "Could not sequence");
-				return "";
+
+		List<String> list = new ArrayList<>();
+
+		int wordlen = intValue(wordSpinner);
+		List<List<Integer>> plist = new ArrayList<>();
+		List<Long> pcounts = new ArrayList<>();
+		for (int n = 1; n < (wordlen / MIN); n++) {
+			Set<List<Integer>> pset = partitions(n, wordlen);
+			//System.out.println("parts(" + n + ")=" + pset);
+			for (List<Integer> p : pset) {
+				plist.add(p);
+				pcounts.add(dictproduct(p));
+				//System.out.println("part=" + p + " prod(p)=" + dictproduct(p));
 			}
-			
-			for (int x : seq) {
-				Set<String> s = dict.get(x);
-				if (s != null && s.size() > 0) {
-					String[] a = s.toArray(new String[s.size()]);
-					String word = a[RANDOM.nextInt(a.length)];
-					if (titleBox.isSelected()) {
-						word = word.substring(0, 1).toUpperCase() + word.substring(1);
+		}
+
+		long ptotal = sum(pcounts);
+		int words = 0;
+		System.out.println("ptotal=" + ptotal);
+
+		{
+			long index = (RANDOM.nextLong() >>> 1) % ptotal;
+			long sum = 0;
+			for (int n = 0; n < pcounts.size(); n++) {
+				sum = sum + pcounts.get(n);
+				if (sum >= index) {
+					List<Integer> p = plist.get(n);
+					words = p.size();
+					Collections.shuffle(p, RANDOM);
+					for (Integer i : p) {
+						String word = randomItem(dict.get(i));
+						if (titleBox.isSelected()) {
+							word = word.substring(0, 1).toUpperCase() + word.substring(1);
+						}
+						list.add(word);
 					}
-					parts.add(word);
+					break;
 				}
 			}
 		}
-		
-		{
-			int dig = ((Integer)digitSpinner.getValue()).intValue();
-			if (dig > 0) {
-				parts.add(digit(dig));
-			}
+
+		int dig = intValue(digitSpinner);
+		if (dig > 0) {
+			list.add(digit(dig));
 		}
-		
-		{
-			int pun = ((Integer)punctSpinner.getValue()).intValue();
-			if (pun > 0) {
-				parts.add(punct(pun));
-			}
+
+		int pun = intValue(punctSpinner);
+		if (pun > 0) {
+			list.add(punct(pun));
 		}
-		
-		Collections.shuffle(parts, RANDOM);
-		return String.join("", parts);
+
+		double space = ptotal + pow(10, dig) + pow(PUNCT, pun);
+
+		if (shuffleBox.isSelected()) {
+			Collections.shuffle(list, RANDOM);
+			double f = fac(list.size()) / (fac(words)*fac(dig)*fac(pun));
+			space = space * f;
+		}
+
+		setValue(String.join("", list), space);
 	}
-	
-	private List<Integer> seq (int len) {
-		
-		List<List<Integer>> seqs = new ArrayList<>();
-		
-		if (dict.keySet().contains(len)) {
-			seqs.add(Arrays.asList(len));
-		}
-		
-		if (seqs.size() == 0 || len >= MAX) {
-			List<Integer> seq = sumseq(len);
-			if (seq != null) {
-				seqs.add(seq);
-			}
-		}
-		
-		return seqs.size() > 0 ? seqs.get(RANDOM.nextInt(seqs.size())) : null;
-	}
-	
-	private List<Integer> sumseq (int len) {
-		// add sizes to list
-		// shuffle list
-		// pick a subset...
-		Integer[] keys = dict.keySet().toArray(new Integer[dict.size()]);
-		List<Integer> seq = new ArrayList<>();
-		for (int n = 0; n < keys.length; n++) {
-			if (keys[n] <= len - MIN) {
-				for (int m = 0; m < len - MIN; m++) {
-					seq.add(keys[n]);
-				}
-			}
-		}
-//		System.out.println("seq=" + seq);
-		for (int n = 0; n < 100; n++) {
-			Collections.shuffle(seq, RANDOM);
-			int sum = 0;
-			for (int m = 0; m < seq.size() && sum < len; m++) {
-				sum += seq.get(m);
-				if (sum == len) {
-//					System.out.println("n=" + n);
-					return new ArrayList<>(seq.subList(0, m + 1));
-				}
-			}
-		}
-		return null;
-	}
+
 }
