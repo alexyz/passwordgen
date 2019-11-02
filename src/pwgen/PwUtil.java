@@ -10,6 +10,7 @@ public class PwUtil {
     protected static final int PUNCT = punctCount();
     protected static final int ANY = 126 - 33;
 
+    /** int value from spinner */
     public static int intValue(JSpinner s) {
         return ((Number) s.getValue()).intValue();
     }

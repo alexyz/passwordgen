@@ -47,11 +47,11 @@ public class CharPasswordJPanel extends PasswordJPanel {
 	protected void savePrefs () throws Exception {
 		System.out.println("save prefs");
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
-		prefs.putInt("chupper", (Integer) upperSpinner.getValue());
-		prefs.putInt("chlower", (Integer) lowerSpinner.getValue());
-		prefs.putInt("chdigit", (Integer) digitSpinner.getValue());
-		prefs.putInt("chpunct", (Integer) punctSpinner.getValue());
-		prefs.putInt("chany", (Integer) anySpinner.getValue());
+		prefs.putInt("chupper", intValue(upperSpinner));
+		prefs.putInt("chlower", intValue(lowerSpinner));
+		prefs.putInt("chdigit", intValue(digitSpinner));
+		prefs.putInt("chpunct", intValue(punctSpinner));
+		prefs.putInt("chany", intValue(anySpinner));
 		prefs.putBoolean("chshuf", shuffleBox.isSelected());
 		prefs.flush();
 	}

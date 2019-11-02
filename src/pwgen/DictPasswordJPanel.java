@@ -19,7 +19,7 @@ public class DictPasswordJPanel extends PasswordJPanel {
 		public int compare(List<Integer> l1, List<Integer> l2) {
 			int c = l1.size() - l2.size();
 			for (int n = 0; c == 0 && n < l1.size(); n++) {
-				c = l1.get(Integer.valueOf(n)) - l2.get(Integer.valueOf(n));
+				c = l1.get(n) - l2.get(n);
 			}
 			return c;
 		}
@@ -73,7 +73,7 @@ public class DictPasswordJPanel extends PasswordJPanel {
 				// try to avoid poor quality words
 				l = l.trim().toLowerCase();
 				if (p.matcher(l).matches() && l.length() >= MIN && l.length() <= MAX) {
-					dictset.computeIfAbsent(l.length(), k -> new TreeSet<>()).add(l);
+					dictset.computeIfAbsent(Integer.valueOf(l.length()), k -> new TreeSet<>()).add(l);
 				}
 			}
 		} catch (Exception e) {
@@ -105,9 +105,9 @@ public class DictPasswordJPanel extends PasswordJPanel {
 	@Override
 	protected void savePrefs () throws Exception {
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
-		prefs.putInt("dclen", (Integer) wordSpinner.getValue());
-		prefs.putInt("dcdigit", (Integer) digitSpinner.getValue());
-		prefs.putInt("dcpunct", (Integer) punctSpinner.getValue());
+		prefs.putInt("dclen", intValue(wordSpinner));
+		prefs.putInt("dcdigit", intValue(digitSpinner));
+		prefs.putInt("dcpunct", intValue(punctSpinner));
 		prefs.putBoolean("dctitle", titleBox.isSelected());
 		prefs.putBoolean("dcshuf", shuffleBox.isSelected());
 		if (file != null) {
@@ -134,18 +134,18 @@ public class DictPasswordJPanel extends PasswordJPanel {
 	private List<Integer> join (List<Integer> l, int i) {
 		List<Integer> l2 = new ArrayList<>();
 		l2.addAll(l);
-		l2.add(i);
+		l2.add(Integer.valueOf(i));
 		Collections.sort(l2);
 		return l2;
 	}
 
-	private Long dictproduct(List<Integer> x) {
+	private long dictproduct(List<Integer> x) {
 		long v = 1;
 		for (Integer i : x) {
 			List<String> s = dict.get(i);
 			v = v * (s != null ? s.size() : 0);
 		}
-		return Long.valueOf(v);
+		return v;
 	}
 
 	private long sum (List<Long> l) {
@@ -177,7 +177,7 @@ public class DictPasswordJPanel extends PasswordJPanel {
 			//System.out.println("parts(" + n + ")=" + pset);
 			for (List<Integer> p : pset) {
 				plist.add(p);
-				pcounts.add(dictproduct(p));
+				pcounts.add(Long.valueOf(dictproduct(p)));
 				//System.out.println("part=" + p + " prod(p)=" + dictproduct(p));
 			}
 		}

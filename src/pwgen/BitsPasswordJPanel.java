@@ -1,6 +1,5 @@
 package pwgen;
 
-import java.util.Collections;
 import java.util.prefs.Preferences;
 
 import javax.swing.*;
@@ -22,7 +21,7 @@ public class BitsPasswordJPanel extends PasswordJPanel {
 	protected void loadPrefs () throws Exception {
 		System.out.println("load prefs");
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
-		bitsSpinner.setValue(Integer.valueOf(prefs.getInt("btbits", 64)));
+		bitsSpinner.setValue(prefs.getInt("btbits", 64));
 		b64CheckBox.setSelected(prefs.getBoolean("btb64", true));
 	}
 	
@@ -30,7 +29,7 @@ public class BitsPasswordJPanel extends PasswordJPanel {
 	protected void savePrefs () throws Exception {
 		System.out.println("save prefs");
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
-		prefs.putInt("btbits", ((Number) bitsSpinner.getValue()).intValue());
+		prefs.putInt("btbits", intValue(bitsSpinner));
 		prefs.putBoolean("btb64", b64CheckBox.isSelected());
 		prefs.flush();
 	}
@@ -40,7 +39,6 @@ public class BitsPasswordJPanel extends PasswordJPanel {
 		StringBuilder sb = new StringBuilder();
 		int b = intValue(bitsSpinner);
 		sb.append(bits(b, b64CheckBox.isSelected()));
-		Collections.shuffle(new StringBuilderList(sb), RANDOM);
 		setValue(sb.toString(), Math.pow(2, b));
 	}
 }

@@ -13,6 +13,7 @@ public class WordPasswordJPanel extends PasswordJPanel {
 	
 	private final JSpinner wordSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JSpinner digitSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
+	private final JSpinner punctSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
 	private final JCheckBox titleBox = new JCheckBox("Title");
 	private final JCheckBox shuffleBox = new JCheckBox("Shuffle");
 	
@@ -21,6 +22,8 @@ public class WordPasswordJPanel extends PasswordJPanel {
 		optionPanel.add(wordSpinner);
 		optionPanel.add(new JLabel("Digit"));
 		optionPanel.add(digitSpinner);
+		optionPanel.add(new JLabel("Punct"));
+		optionPanel.add(punctSpinner);
 		optionPanel.add(titleBox);
 		optionPanel.add(shuffleBox);
 	}
@@ -32,29 +35,35 @@ public class WordPasswordJPanel extends PasswordJPanel {
 		digitSpinner.setValue(prefs.getInt("wddigit", 1));
 		titleBox.setSelected(prefs.getBoolean("wdtitle", true));
 		shuffleBox.setSelected(prefs.getBoolean("wdshuf", false));
+		punctSpinner.setValue(prefs.getInt("wdpunct", 1));
 	}
 	
 	@Override
 	protected void savePrefs () throws Exception {
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
-		prefs.putInt("wdwords", (Integer) wordSpinner.getValue());
-		prefs.putInt("wddigit", (Integer) digitSpinner.getValue());
+		prefs.putInt("wdwords", intValue(wordSpinner));
+		prefs.putInt("wddigit", intValue(digitSpinner));
 		prefs.putBoolean("wdtitle", titleBox.isSelected());
 		prefs.putBoolean("wdshuf", shuffleBox.isSelected());
+		prefs.putInt("wdpunct", intValue(punctSpinner));
 		prefs.sync();
 	}
 	
 	@Override
 	public void generate () {
 		List<String> list = new ArrayList<>();
-		int word = ((Integer) wordSpinner.getValue()).intValue();
-		int digit = ((Integer) digitSpinner.getValue()).intValue();
+		int w = intValue(wordSpinner);
+		int d = intValue(digitSpinner);
+		int p = intValue(punctSpinner);
 		
-		list.add(word(word, titleBox.isSelected()));
-		list.add(digit(digit));
+		list.add(word(w, titleBox.isSelected()));
+		list.add(digit(d));
+		list.add(punct(p));
+
 		if (shuffleBox.isSelected()) {
 			Collections.shuffle(list, RANDOM);
 		}
+
 		StringBuilder sb = new StringBuilder();
 		for (String s : list) {
 			sb.append(s);

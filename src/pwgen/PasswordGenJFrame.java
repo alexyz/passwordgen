@@ -15,6 +15,7 @@ public class PasswordGenJFrame extends JFrame {
 	private final WordPasswordJPanel wordPassPanel = new WordPasswordJPanel();
 	private final DictPasswordJPanel dictPassPanel = new DictPasswordJPanel();
 	private final BitsPasswordJPanel bitsPassPanel = new BitsPasswordJPanel();
+	private final PinPasswordJPanel pinPassPanel = new PinPasswordJPanel();
 	
 	public static void main (String args[]) {
 		PasswordGenJFrame f = new PasswordGenJFrame();
@@ -37,6 +38,7 @@ public class PasswordGenJFrame extends JFrame {
 		tabs.add("Word", wordPassPanel);
 		tabs.add("Dictionary", dictPassPanel);
 		tabs.add("Bits", bitsPassPanel);
+		tabs.add("PIN", pinPassPanel);
 		
 		loadPrefs();
 		
@@ -52,6 +54,7 @@ public class PasswordGenJFrame extends JFrame {
 			wordPassPanel.loadPrefs();
 			dictPassPanel.loadPrefs();
 			bitsPassPanel.loadPrefs();
+			pinPassPanel.loadPrefs();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, e.toString());
 		}
@@ -66,6 +69,7 @@ public class PasswordGenJFrame extends JFrame {
 			wordPassPanel.savePrefs();
 			dictPassPanel.savePrefs();
 			bitsPassPanel.savePrefs();
+			pinPassPanel.savePrefs();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, e.toString());
 		}
