@@ -13,4 +13,4 @@ Screenshot
 Download
 --------
 
-[Runnable jar file](https://www.dropbox.com/s/0ydregioanvjtmy/passwordgen.jar?dl=0)
+See GitHub releases!
