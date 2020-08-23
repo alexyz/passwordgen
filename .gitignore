@@ -4,4 +4,4 @@ target
 dist
 .DS_Store
 .idea
-passwordgen.iml
+*.iml
