@@ -68,7 +68,7 @@ public class WordPasswordJPanel extends PasswordJPanel {
 		for (String s : list) {
 			sb.append(s);
 		}
-		setValue(sb.toString(), 0);
+		setValue(sb.toString(), 0, false);
 	}
 	
 	protected String word (int len, boolean title) {

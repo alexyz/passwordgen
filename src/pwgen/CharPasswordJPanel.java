@@ -76,6 +76,6 @@ public class CharPasswordJPanel extends PasswordJPanel {
 			double f = fac(sb.length()) / (fac(u)*fac(l)*fac(d)*fac(p)*fac(a));
 			v = v * f;
 		}
-		setValue(sb.toString(), v);
+		setValue(sb.toString(), v, false);
 	}
 }

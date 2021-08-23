@@ -225,7 +225,7 @@ public class DictPasswordJPanel extends PasswordJPanel {
 			space = space * f;
 		}
 
-		setValue(String.join("", list), space);
+		setValue(String.join("", list), space, false);
 	}
 
 }

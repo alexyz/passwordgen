@@ -39,6 +39,6 @@ public class BitsPasswordJPanel extends PasswordJPanel {
 		StringBuilder sb = new StringBuilder();
 		int b = intValue(bitsSpinner);
 		sb.append(bits(b, b64CheckBox.isSelected()));
-		setValue(sb.toString(), Math.pow(2, b));
+		setValue(sb.toString(), b, false);
 	}
 }

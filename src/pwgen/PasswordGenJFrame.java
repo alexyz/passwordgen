@@ -9,13 +9,14 @@ import javax.swing.*;
  * simple secure password generator
  */
 public class PasswordGenJFrame extends JFrame {
-	
+
 	private final JTabbedPane tabs = new JTabbedPane();
 	private final CharPasswordJPanel charPassPanel = new CharPasswordJPanel();
 	private final WordPasswordJPanel wordPassPanel = new WordPasswordJPanel();
 	private final DictPasswordJPanel dictPassPanel = new DictPasswordJPanel();
 	private final BitsPasswordJPanel bitsPassPanel = new BitsPasswordJPanel();
 	private final PinPasswordJPanel pinPassPanel = new PinPasswordJPanel();
+	private final UuidPasswordJPanel uuidPassPanel = new UuidPasswordJPanel();
 	
 	public static void main (String args[]) {
 		PasswordGenJFrame f = new PasswordGenJFrame();
@@ -39,6 +40,7 @@ public class PasswordGenJFrame extends JFrame {
 		tabs.add("Dictionary", dictPassPanel);
 		tabs.add("Bits", bitsPassPanel);
 		tabs.add("PIN", pinPassPanel);
+		tabs.add("UUID", uuidPassPanel);
 		
 		loadPrefs();
 		
@@ -55,6 +57,7 @@ public class PasswordGenJFrame extends JFrame {
 			dictPassPanel.loadPrefs();
 			bitsPassPanel.loadPrefs();
 			pinPassPanel.loadPrefs();
+			uuidPassPanel.loadPrefs();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, e.toString());
 		}
@@ -70,6 +73,7 @@ public class PasswordGenJFrame extends JFrame {
 			dictPassPanel.savePrefs();
 			bitsPassPanel.savePrefs();
 			pinPassPanel.savePrefs();
+			uuidPassPanel.savePrefs();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, e.toString());
 		}

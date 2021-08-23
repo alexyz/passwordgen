@@ -68,6 +68,6 @@ public class PinPasswordJPanel extends PasswordJPanel {
 			Collections.sort(sbl);
 		}
 
-		setValue(sbl.sb.toString(), 0);
+		setValue(sbl.sb.toString(), 0, false);
 	}
 }
