@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.*;
 
@@ -12,11 +13,11 @@ import static pwgen.PwUtil.*;
 
 public class DictPasswordJPanel extends PasswordJPanel {
 
-    private static final int MIN = 3;
-    private static final int MAX = 13;
+	private static final int MIN = 4;
+	private static final int MAX = 12;
 	private static Comparator<List<Integer>> LI_CMP = new Comparator<List<Integer>>() {
 		@Override
-		public int compare(List<Integer> l1, List<Integer> l2) {
+		public int compare (List<Integer> l1, List<Integer> l2) {
 			int c = l1.size() - l2.size();
 			for (int n = 0; c == 0 && n < l1.size(); n++) {
 				c = l1.get(n) - l2.get(n);
@@ -24,23 +25,23 @@ public class DictPasswordJPanel extends PasswordJPanel {
 			return c;
 		}
 	};
-	
+
 	private final JLabel fileLabel = new JLabel();
 	private final JButton fileButton = new JButton("File...");
 	private final JSpinner wordSpinner = new JSpinner(new SpinnerNumberModel(8, 0, 99, 1));
 	private final JSpinner digitSpinner = new JSpinner(new SpinnerNumberModel(1, 0, 99, 1));
 	private final JSpinner punctSpinner = new JSpinner(new SpinnerNumberModel(1, 0, 99, 1));
 	/** map of word length to list of words */
-	private final SortedMap<Integer,List<String>> dict = new TreeMap<>();
+	private final SortedMap<Integer, List<String>> dict = new TreeMap<>();
 	private final JCheckBox titleBox = new JCheckBox("Title");
 	private final JCheckBox shuffleBox = new JCheckBox("Shuffle");
-	
+
 	private File file;
-	
+
 	public DictPasswordJPanel () {
-		
+
 		fileButton.addActionListener(e -> file());
-		
+
 		optionPanel.add(fileLabel);
 		optionPanel.add(fileButton);
 		optionPanel.add(new JLabel("Word"));
@@ -52,7 +53,7 @@ public class DictPasswordJPanel extends PasswordJPanel {
 		optionPanel.add(titleBox);
 		optionPanel.add(shuffleBox);
 	}
-	
+
 	private void file () {
 		JFileChooser fc = new JFileChooser();
 		if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -63,9 +64,9 @@ public class DictPasswordJPanel extends PasswordJPanel {
 			}
 		}
 	}
-	
+
 	private void loadfile () {
-		Map<Integer,Set<String>> dictset = new TreeMap<>();
+		Map<Integer, Set<String>> dictset = new TreeMap<>();
 		Pattern p = Pattern.compile("[a-z]+");
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
 			String l;
@@ -81,11 +82,12 @@ public class DictPasswordJPanel extends PasswordJPanel {
 			JOptionPane.showMessageDialog(this, e.toString());
 		}
 		dict.clear();
-		for (Map.Entry<Integer,Set<String>> e : dictset.entrySet()) {
+		for (Map.Entry<Integer, Set<String>> e : dictset.entrySet()) {
 			dict.put(e.getKey(), new ArrayList<>(e.getValue()));
 		}
+		System.out.println("loaded " + dict.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().size())));
 	}
-	
+
 	@Override
 	protected void loadPrefs () {
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
@@ -101,7 +103,7 @@ public class DictPasswordJPanel extends PasswordJPanel {
 			fileLabel.setText(file.getName());
 		}
 	}
-	
+
 	@Override
 	protected void savePrefs () throws Exception {
 		Preferences prefs = Preferences.userNodeForPackage(getClass());
@@ -117,7 +119,7 @@ public class DictPasswordJPanel extends PasswordJPanel {
 		prefs.sync();
 	}
 
-	private Set<List<Integer>> partitions(int n, int s) {
+	private Set<List<Integer>> partitions (int n, int s) {
 		Set<List<Integer>> out = new TreeSet<>(LI_CMP);
 		if (n == 1 && s >= MIN && s <= MAX) {
 			out.add(Arrays.asList(Integer.valueOf(s)));
@@ -139,23 +141,6 @@ public class DictPasswordJPanel extends PasswordJPanel {
 		return l2;
 	}
 
-	private long dictproduct(List<Integer> x) {
-		long v = 1;
-		for (Integer i : x) {
-			List<String> s = dict.get(i);
-			v = v * (s != null ? s.size() : 0);
-		}
-		return v;
-	}
-
-	private long sum (List<Long> l) {
-		long v = 0;
-		for (Long x : l) {
-			v = v + x;
-		}
-		return v;
-	}
-	
 	@Override
 	public void generate () {
 		if (dict.size() == 0) {
@@ -169,41 +154,29 @@ public class DictPasswordJPanel extends PasswordJPanel {
 
 		List<String> list = new ArrayList<>();
 
-		int wordlen = intValue(wordSpinner);
+		int wordLen = intValue(wordSpinner);
 		List<List<Integer>> plist = new ArrayList<>();
-		List<Long> pcounts = new ArrayList<>();
-		for (int n = 1; n < (wordlen / MIN); n++) {
-			Set<List<Integer>> pset = partitions(n, wordlen);
-			//System.out.println("parts(" + n + ")=" + pset);
-			for (List<Integer> p : pset) {
-				plist.add(p);
-				pcounts.add(Long.valueOf(dictproduct(p)));
-				//System.out.println("part=" + p + " prod(p)=" + dictproduct(p));
-			}
+		for (int n = 1; n <= 2; n++) {
+			Set<List<Integer>> pset = partitions(n, wordLen);
+			System.out.println("parts(" + n + "," + wordLen + ")=" + pset);
+			plist.addAll(pset);
 		}
-
-		long ptotal = sum(pcounts);
-		int words = 0;
-		System.out.println("ptotal=" + ptotal);
+		System.out.println("plist=" + plist);
 
 		{
-			long index = (RANDOM.nextLong() >>> 1) % ptotal;
-			long sum = 0;
-			for (int n = 0; n < pcounts.size(); n++) {
-				sum = sum + pcounts.get(n);
-				if (sum >= index) {
-					List<Integer> p = plist.get(n);
-					words = p.size();
-					Collections.shuffle(p, RANDOM);
-					for (Integer i : p) {
-						String word = randomItem(dict.get(i));
-						if (titleBox.isSelected()) {
-							word = word.substring(0, 1).toUpperCase() + word.substring(1);
-						}
-						list.add(word);
-					}
-					break;
+			List<Integer> p = new ArrayList<>(randomItem(plist));
+			if (shuffleBox.isSelected()) {
+				Collections.shuffle(p);
+			} else {
+				Collections.sort(p);
+				Collections.reverse(p);
+			}
+			for (Integer i : p) {
+				String word = randomItem(dict.get(i));
+				if (titleBox.isSelected()) {
+					word = word.substring(0, 1).toUpperCase() + word.substring(1);
 				}
+				list.add(word);
 			}
 		}
 
@@ -217,15 +190,11 @@ public class DictPasswordJPanel extends PasswordJPanel {
 			list.add(punct(pun));
 		}
 
-		double space = ptotal + pow(10, dig) + pow(PUNCT, pun);
-
 		if (shuffleBox.isSelected()) {
 			Collections.shuffle(list, RANDOM);
-			double f = fac(list.size()) / (fac(words)*fac(dig)*fac(pun));
-			space = space * f;
 		}
 
-		setValue(String.join("", list), space, false);
+		setValue(String.join("", list), 0, false);
 	}
 
 }
